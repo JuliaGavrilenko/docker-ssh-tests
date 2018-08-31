@@ -17,7 +17,6 @@ RUN mkdir /root/.ssh && chmod 700 /root/.ssh
 COPY id_rsa /root/.ssh
 COPY id_rsa.pub /root/.ssh
 RUN chmod 600 /root/.ssh/id_rsa && chmod 644 /root/.ssh/id_rsa.pub
-COPY entrypoint.sh /root/entrypoint.sh
 
 VOLUME [ "/sys/fs/cgroup" ]
 CMD ["/usr/sbin/init"]
