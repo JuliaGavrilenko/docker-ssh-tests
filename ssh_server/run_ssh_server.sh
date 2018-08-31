@@ -5,5 +5,5 @@ docker run -itd \
 	-v /sys/fs/cgroup:/sys/fs/cgroup:ro \
 	--name ssh_server \
 	--net swarm_overlay_ssh \
-	--ip 10.0.0.10 \
+	--ip 10.0.1.10 \
 	ssh_server
