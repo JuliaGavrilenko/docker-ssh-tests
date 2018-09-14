@@ -1,0 +1,63 @@
+#######################################################################################################
+# IMPORTANT NOTE:
+# docker stack deploy -c docker-compose.yml ssh_stack
+# the above command does not server our purpose as we need 
+# 1) privileged containers
+# 2) ability to control ip address and hostname of replicated containers
+# The above mentioned functionality is not satisfied by current version of docker-compose as privileged 
+# option is ignored in swarm mode and replicated containers are assigned random ip addresses and 
+# hostnames that are controlled by the swarm managers.
+# Therefore, this is not the ideal way to set up the ssh_client and ssh_server containers at this point. 
+# Please follow the recipe in README.md instead. 
+########################################################################################################
+version: '3.7'
+services:
+    ssh_server:
+        image: ssh_server
+        build: 
+            context: ./ssh_server
+            dockerfile: Dockerfile
+        privileged: true
+        deploy:
+            replicas: 1
+            restart_policy: 
+                condition: on-failure 
+        extra_hosts:
+            - "somehost:192.168.1.1"
+        networks:
+            swarm_overlay:
+                aliases:
+                    - ssh_server.mysite.ch
+                ipv4_address: 10.0.5.10
+        volumes:
+            - type: bind
+              source: /sys/fs/cgroup
+              target: /sys/fs/cgroup
+        
+     
+    ssh_client:
+        image: ssh_client
+        build:
+            context: ./ssh_client
+            dockerfile: Dockerfile
+        privileged: true
+        deploy:
+            mode: replicated
+            replicas: 2
+            restart_policy: 
+                condition: on-failure
+        networks:
+            - swarm_overlay
+        volumes:
+            - type: bind
+              source: /sys/fs/cgroup
+              target: /sys/fs/cgroup
+        
+networks:
+    swarm_overlay:
+        driver: overlay
+        ipam:
+            config:
+                - subnet: 10.0.5.0/24
+        attachable: true
+        
